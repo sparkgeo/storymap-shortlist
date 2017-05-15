@@ -1,4 +1,5 @@
-define(["lib-build/css!./MainView",
+define(["maptiks/mapWrapper",
+        "lib-build/css!./MainView",
 		"./Config",
 		"./Data",
 		"./WebApplicationData",
@@ -40,7 +41,8 @@ define(["lib-build/css!./MainView",
 		"lib-build/css!../ui/desktop/MultiTips"
 	],
 	function (
-		viewCss,
+		mapWrapper,
+        viewCss,
 		Config,
 		Data,
 		WebApplicationData,
@@ -99,6 +101,26 @@ define(["lib-build/css!./MainView",
 			{
 				_core = core;
 
+                // *******************************************
+                // **** Maptiks Changes below
+                // *******************************************
+
+                // After a map is loaded (when the map starts to render)
+                topic.subscribe("story-loaded-map", function(result){
+                  var container = $(app.maps[app.data.getWebAppData().getWebmap()].response.map.container); // only one map allowed, so this is the current map div
+                  var maptiksMapOptions = {
+                    extent: app.map.extent,
+                    maptiks_trackcode: WebApplicationData.getMaptiks().maptiksTrackcode, // from Builder map options
+                    maptiks_id: WebApplicationData.getMaptiks().maptiksId // from Builder map options, ID
+                  };
+                  mapWrapper(container, maptiksMapOptions, app.map);
+                });
+
+                
+                // *******************************************
+                // **** Maptiks Changes done
+                // *******************************************
+              
 				// Do not allow builder under IE 10
 				if( app.isInBuilder && has("ie") && has("ie") < 10) {
 					i18n.viewer.errors.noBuilderIE = i18n.viewer.errors.noBuilderIE.replace('%VERSION%', 10).replace('%UPGRADE%', i18n.viewer.errors.upgradeBrowser);
@@ -254,6 +276,7 @@ define(["lib-build/css!./MainView",
 			this.firstWebmapLoaded = function()
 			{
 				storyDataReady();
+                topic.publish("story-loaded-map");
 			};
 
 			this.startFromScratch = function()

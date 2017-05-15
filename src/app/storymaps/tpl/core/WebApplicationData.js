@@ -388,7 +388,16 @@ define(["dojo/_base/lang"],
 			getHeaderCompactSize: function()
 			{
 				return this.getHeader().compactSize;
-			}
+			},
+            getMaptiks: function ()
+            {
+                return this.getSettings().maptiks || {};
+            },
+            setMaptiks: function (data)
+            {
+                _data.values.settings = _data.values.settings || {};
+				_data.values.settings.maptiks = data;
+            }
 		};
 	}
 );
