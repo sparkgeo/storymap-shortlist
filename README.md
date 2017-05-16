@@ -19,6 +19,7 @@ For more infomation about using and customizing Esri's Storytelling Apps follow 
 
  * [Introduction](#introduction)
  * [Instructions](#instructions)
+ * [Maptiks integration](#maptiks-integration)
  * [Feedback / support](#feedback--support)
  * [FAQ](#faq)
  * [Configuration](#configuration)
@@ -45,6 +46,31 @@ Once your story is ready, you have to find its ID in ArcGIS Online. The ID is a 
 
 Enjoy!
 You can continue to use the builder in ArcGIS Online to modify your story.
+
+## Maptiks integration
+
+Map Series applications provide events, called "topics", that we can subscribe to in order to monitor the application life cycle. One such topic is "story-loaded-map"<sup>1</sup>, which fires when the application loads, and when the user navigates between tabs. By listening to this event, we can ensure that Maptiks monitors the current map, and switches to the correct map when the user switches maps.
+
+Map series applications also provide helper functions, within the "app" global variable, which stores information about the app, including settings specified by the author within the application builder. Below, we use app variable to determine the current map div and extent, as well as Maptiks parameters entered by the author in the application builder.
+
+See the [Developer guide](#developer-guide) for more information about topics and helper functions.
+
+```
+topic.subscribe("story-loaded-map", function(){
+  var container = app.map.container; // only one map allowed, so this is the current map div
+  var maptiksMapOptions = {
+    extent: app.map.extent,
+    maptiks_trackcode: app.data.getWebAppData().getMaptiks().maptiksTrackcode, // from Builder map options
+    maptiks_id: app.data.getWebAppData().getMaptiks().maptiksId // from Builder map options, ID
+  };
+  mapWrapper(container, maptiksMapOptions, app.map);
+});
+...
+
+// when map has loaded, publish the topic
+topic.publish("story-loaded-map");
+```
+<sup>1</sup>Most Esri story map templates include a "story-loaded-map" topic, however, the shortlist template does not.  We published our own topic within MainView.js.
 
 ## Feedback / support
 We would love to hear from you!
