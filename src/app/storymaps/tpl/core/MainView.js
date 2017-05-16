@@ -107,11 +107,11 @@ define(["maptiks/mapWrapper",
 
                 // After a map is loaded (when the map starts to render)
                 topic.subscribe("story-loaded-map", function(result){
-                  var container = $(app.maps[app.data.getWebAppData().getWebmap()].response.map.container); // only one map allowed, so this is the current map div
+                  var container = app.map.container; // only one map allowed, so this is the current map div
                   var maptiksMapOptions = {
                     extent: app.map.extent,
-                    maptiks_trackcode: WebApplicationData.getMaptiks().maptiksTrackcode, // from Builder map options
-                    maptiks_id: WebApplicationData.getMaptiks().maptiksId // from Builder map options, ID
+                    maptiks_trackcode: app.data.getWebAppData().getMaptiks().maptiksTrackcode, // from Builder map options
+                    maptiks_id: app.data.getWebAppData().getMaptiks().maptiksId // from Builder map options, ID
                   };
                   mapWrapper(container, maptiksMapOptions, app.map);
                 });
