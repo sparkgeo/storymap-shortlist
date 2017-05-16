@@ -106,7 +106,7 @@ define(["maptiks/mapWrapper",
                 // *******************************************
 
                 // After a map is loaded (when the map starts to render)
-                topic.subscribe("story-loaded-map", function(result){
+                topic.subscribe("story-loaded-map", function(){
                   var container = app.map.container; // only one map allowed, so this is the current map div
                   var maptiksMapOptions = {
                     extent: app.map.extent,
