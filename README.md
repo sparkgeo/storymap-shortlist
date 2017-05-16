@@ -53,7 +53,7 @@ Map Series applications provide events, called "topics", that we can subscribe t
 
 Map series applications also provide helper functions, within the "app" global variable, which stores information about the app, including settings specified by the author within the application builder. Below, we use app variable to determine the current map div and extent, as well as Maptiks parameters entered by the author in the application builder.
 
-See the [Developer guide](#developer-guide) for more information about topics and helper functions.
+See the [Developer guide](https://github.com/Esri/storymap-series/blob/master/README.md#developer-guide)<sup>2</sup> for more information about topics and helper functions.
 
 ```
 topic.subscribe("story-loaded-map", function(){
@@ -71,6 +71,7 @@ topic.subscribe("story-loaded-map", function(){
 topic.publish("story-loaded-map");
 ```
 <sup>1</sup>Most Esri story map templates include a "story-loaded-map" topic, however, the shortlist template does not.  We published our own topic within MainView.js.
+<sup>2</sup>Most Esri story map README files include a Developer Guide. This link points to the series story map developer guide.
 
 ## Feedback / support
 We would love to hear from you!
