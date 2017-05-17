@@ -49,9 +49,9 @@ You can continue to use the builder in ArcGIS Online to modify your story.
 
 ## Maptiks integration
 
-Map Series applications provide events, called "topics", that we can subscribe to in order to monitor the application life cycle. One such topic is "story-loaded-map"<sup>1</sup>, which fires when the application loads, and when the user navigates between tabs. By listening to this event, we can ensure that Maptiks monitors the current map, and switches to the correct map when the user switches maps.
+Story map applications provide [dojo/topics](https://dojotoolkit.org/reference-guide/1.9/dojo/topic.html) (global events), that we can subscribe to in order to monitor the application life cycle. One such topic is "story-loaded-map"<sup>1</sup>, which fires when the application loads. By listening to this event, we can ensure that Maptiks monitors the current map.
 
-Map series applications also provide helper functions, within the "app" global variable, which stores information about the app, including settings specified by the author within the application builder. Below, we use app variable to determine the current map div and extent, as well as Maptiks parameters entered by the author in the application builder.
+Story map applications also provide helper functions, within the "app" global variable, which stores information about the app, including settings specified by the author within the application builder. Below, we use app variable to determine the current map div and extent, as well as Maptiks parameters entered by the author in the application builder. If the UI is unnecessary, these values may be hard-coded in development.
 
 See the [Developer guide](https://github.com/Esri/storymap-series/blob/master/README.md#developer-guide)<sup>2</sup> for more information about topics and helper functions.
 
