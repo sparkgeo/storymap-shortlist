@@ -49,29 +49,46 @@ You can continue to use the builder in ArcGIS Online to modify your story.
 
 ## Maptiks integration
 
-Story map applications provide [dojo/topics](https://dojotoolkit.org/reference-guide/1.9/dojo/topic.html) (global events), that we can subscribe to in order to monitor the application life cycle. One such topic is "story-loaded-map"<sup>1</sup>, which fires when the application loads. By listening to this event, we can ensure that Maptiks monitors the current map.
+1. Add a path to the Maptiks wrapper in `main-config.js`:
 
-Story map applications also provide helper functions, within the "app" global variable, which stores information about the app, including settings specified by the author within the application builder. Below, we use app variable to determine the current map div and extent, as well as Maptiks parameters entered by the author in the application builder. If the builder UI is unnecessary, these values may be hard-coded in development.
+    ```
+    window.dojoConfig = {
+        // ...
+        paths: { maptiks: '//cdn.maptiks.com/esri3' }
+    };
+    ```
+2. Add the maptiks/mapWrapper class to `MainView.js`:
 
-See the [Developer guide](https://github.com/Esri/storymap-series/blob/master/README.md#developer-guide)<sup>2</sup> for more information about topics and helper functions.
+    ```
+    define(["maptiks/mapWrapper",
+    // ...
+        function(mapWrapper,
+        // ...
+    ```
+3. Story map applications provide [dojo/topics](https://dojotoolkit.org/reference-guide/1.9/dojo/topic.html) (global events), that we can subscribe to in order to monitor the application life cycle. One such topic is "story-loaded-map"<sup>1</sup>, which fires when the application loads. By listening to this event, we can ensure that Maptiks monitors the current map.
 
-```
-topic.subscribe("story-loaded-map", function(){
-  var container = app.map.container; // only one map allowed, so this is the current map div
-  var maptiksMapOptions = {
-    extent: app.map.extent,
-    maptiks_trackcode: app.data.getWebAppData().getMaptiks().maptiksTrackcode, // from Builder map options
-    maptiks_id: app.data.getWebAppData().getMaptiks().maptiksId // from Builder map options, ID
-  };
-  mapWrapper(container, maptiksMapOptions, app.map);
-});
-...
+    Story map applications also provide helper functions, within the "app" global variable, which stores information about the app, including settings specified by the author within the application builder. Below, we use app variable to determine the current map div and extent, as well as Maptiks parameters entered by the author in the application builder. If the builder UI is unnecessary, these values may be hard-coded in development.
 
-// when map has loaded, publish the topic
-topic.publish("story-loaded-map");
-```
-<sup>1</sup>Most Esri story map templates include a "story-loaded-map" topic, however, the shortlist template does not.  We published our own topic within MainView.js.
-<sup>2</sup>Most Esri story map README files include a Developer Guide. This link points to the series story map developer guide.
+    See the [Developer guide](https://github.com/Esri/storymap-series/blob/master/README.md#developer-guide)<sup>2</sup> for more information about topics and helper functions.
+
+    ```
+    topic.subscribe("story-loaded-map", function(){
+        var container = app.map.container; // only one map allowed, so this is the current map div
+        var maptiksMapOptions = {
+            extent: app.map.extent,
+            maptiks_trackcode: app.data.getWebAppData().getMaptiks().maptiksTrackcode, // from Builder map options
+            maptiks_id: app.data.getWebAppData().getMaptiks().maptiksId // from Builder map options, ID
+        };
+        mapWrapper(container, maptiksMapOptions, app.map);
+    });
+    ...
+
+    // when map has loaded, publish the topic
+    topic.publish("story-loaded-map");
+    ```
+    <sup>1</sup>Most Esri story map templates include a "story-loaded-map" topic, however, the shortlist template does not.  We published our own topic within MainView.js.
+    
+    <sup>2</sup>Most Esri story map README files include a Developer Guide. This link points to the series story map developer guide.
 
 ## Feedback / support
 We would love to hear from you!
