@@ -1,4 +1,4 @@
-define(["maptiks/mapWrapper",
+define([
         "lib-build/css!./MainView",
 		"./Config",
 		"./Data",
@@ -41,7 +41,6 @@ define(["maptiks/mapWrapper",
 		"lib-build/css!../ui/desktop/MultiTips"
 	],
 	function (
-		mapWrapper,
         viewCss,
 		Config,
 		Data,
@@ -105,18 +104,18 @@ define(["maptiks/mapWrapper",
                 // **** Maptiks Changes below
                 // *******************************************
 
-                // After a map is loaded (when the map starts to render)
                 topic.subscribe("story-loaded-map", function(){
-                  var container = app.map.container; // only one map allowed, so this is the current map div
-                  var maptiksMapOptions = {
-                    extent: app.map.extent,
-                    maptiks_trackcode: app.data.getWebAppData().getMaptiks().maptiksTrackcode, // from Builder map options
-                    maptiks_id: app.data.getWebAppData().getMaptiks().maptiksId // from Builder map options, ID
-                  };
-                  mapWrapper(container, maptiksMapOptions, app.map);
+                  require(['maptiks'], function (mapWrapper) {
+                    var container = app.map.container; // only one map allowed, so this is the current map div
+                    var maptiksMapOptions = {
+                      extent: app.map.extent,
+                      maptiks_trackcode: app.data.getWebAppData().getMaptiks().maptiksTrackcode, // from Builder map options
+                      maptiks_id: app.data.getWebAppData().getMaptiks().maptiksId // from Builder map options, ID
+                    };
+                    mapWrapper(container, maptiksMapOptions, app.map);
+                  });
                 });
 
-                
                 // *******************************************
                 // **** Maptiks Changes done
                 // *******************************************
