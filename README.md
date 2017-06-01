@@ -19,6 +19,7 @@ For more infomation about using and customizing Esri's Storytelling Apps follow 
 
  * [Introduction](#introduction)
  * [Instructions](#instructions)
+ * [Maptiks integration](#maptiks-integration)
  * [Feedback / support](#feedback--support)
  * [FAQ](#faq)
  * [Configuration](#configuration)
@@ -45,6 +46,48 @@ Once your story is ready, you have to find its ID in ArcGIS Online. The ID is a 
 
 Enjoy!
 You can continue to use the builder in ArcGIS Online to modify your story.
+
+## Maptiks integration
+
+1. Add the Maptiks wrapper as a package alias in `main-config.js`:
+
+    ```
+    window.dojoConfig = {
+        // ...
+        aliases: [
+            // ...
+            ['maptiks', '//cdn.maptiks.com/esri3/mapWrapper.js']
+        ]
+    };
+    ```
+2. Story map applications provide [dojo/topics](https://dojotoolkit.org/reference-guide/1.9/dojo/topic.html) (global events), that we can subscribe to in order to monitor the application life cycle. One such topic is "story-loaded-map"<sup>1</sup>, which fires when the application loads. By listening to this event within `MainView.js`, we ensure that Maptiks monitors the current map.
+
+    Story map applications also provide helper functions, within the "app" global variable, which stores information about the app, including settings specified by the author within the application builder. Below, we use the app variable to determine the current map div and extent, as well as Maptiks parameters entered by the author in the application builder. If the builder UI is unnecessary, these values may be hard-coded in development.
+
+    See the [Developer guide](https://github.com/Esri/storymap-series/blob/master/README.md#developer-guide)<sup>2</sup> for more information about topics and helper functions.
+    
+    Finally, require the Maptiks package and create the mapWrapper object, which will communicate with Maptiks using the trackcode associated with your domain and ID of your choice.
+
+    ```
+    topic.subscribe("story-loaded-map", function(){
+        require(['maptiks'], function (mapWrapper) {
+            var container = app.map.container; // only one map allowed, so this is the current map div
+            var maptiksMapOptions = {
+                extent: app.map.extent,
+                maptiks_trackcode: app.data.getWebAppData().getMaptiks().maptiksTrackcode, // from Builder map options
+                maptiks_id: app.data.getWebAppData().getMaptiks().maptiksId // from Builder map options, ID
+            };
+            mapWrapper(container, maptiksMapOptions, app.map);
+        });
+    });
+    // ...
+
+    // when map has loaded, publish the topic
+    topic.publish("story-loaded-map");
+    ```
+    <sup>1</sup>Most Esri story map templates include a "story-loaded-map" topic, however, the shortlist template does not.  We published our own topic within MainView.js.
+    
+    <sup>2</sup>Most Esri story map README files include a Developer Guide. This link points to the series story map developer guide.
 
 ## Feedback / support
 We would love to hear from you!

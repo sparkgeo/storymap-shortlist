@@ -22,6 +22,7 @@ define(["lib-build/tpl!./BuilderView",
 		"./settings/ViewGeneralOptions",
 		"./settings/ViewMapOptions",
 		"storymaps/common/builder/settings/ViewHeader",
+        "./settings/ViewMaptiks",
 		// global map extent save (home button setting)
 		"./MapExtentSave",
 		// Workflow picker
@@ -76,6 +77,7 @@ define(["lib-build/tpl!./BuilderView",
 		ViewGeneralOptions,
 		ViewMapOptions,
 		ViewHeader,
+        ViewMaptiks,
 		// Home button extent saveAppMapExtentSave,
 		MapExtentSave,
 		// Workflow
@@ -575,6 +577,7 @@ define(["lib-build/tpl!./BuilderView",
 					new ViewHeader({
 						smallSizeOpt: app.appCfg.headerCompactOpt
 					}),
+                    new ViewMaptiks()
 				];
 			};
 
@@ -589,7 +592,8 @@ define(["lib-build/tpl!./BuilderView",
 					[
 						WebApplicationData.getGeneralOptions(),
 						WebApplicationData.getGeneralOptions(),
-						WebApplicationData.getHeader()
+						WebApplicationData.getHeader(),
+                        WebApplicationData.getMaptiks()
 					],
 					null
 				);
@@ -1090,7 +1094,7 @@ define(["lib-build/tpl!./BuilderView",
 				$.extend(generalOptions, data.settings[1]);
 				app.data.getWebAppData().setGeneralOptions(data.settings[0]);
 				app.data.getWebAppData().setHeader(data.settings[2]);
-
+                app.data.getWebAppData().setMaptiks(data.settings[3]);
 
 				if(updateExtentMode)
 					topic.publish("UPDATE_EXTENT_MODE", data.settings[1].extentMode);
