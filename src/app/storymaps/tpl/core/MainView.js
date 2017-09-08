@@ -1,4 +1,5 @@
 define([
+        "./Maptiks", // import Maptiks code
         "lib-build/css!./MainView",
 		"./Config",
 		"./Data",
@@ -41,6 +42,7 @@ define([
 		"lib-build/css!../ui/desktop/MultiTips"
 	],
 	function (
+        Maptiks,
         viewCss,
 		Config,
 		Data,
@@ -99,26 +101,6 @@ define([
 			this.init = function(core)
 			{
 				_core = core;
-
-                // *******************************************
-                // **** Maptiks Changes below
-                // *******************************************
-
-                topic.subscribe("story-loaded-map", function(){
-                  require(['maptiks'], function (mapWrapper) {
-                    var container = app.map.container; // only one map allowed, so this is the current map div
-                    var maptiksMapOptions = {
-                      extent: app.map.extent,
-                      maptiks_trackcode: app.data.getWebAppData().getMaptiks().maptiksTrackcode, // from Builder map options
-                      maptiks_id: app.data.getWebAppData().getMaptiks().maptiksId // from Builder map options, ID
-                    };
-                    mapWrapper(container, maptiksMapOptions, app.map);
-                  });
-                });
-
-                // *******************************************
-                // **** Maptiks Changes done
-                // *******************************************
               
 				// Do not allow builder under IE 10
 				if( app.isInBuilder && has("ie") && has("ie") < 10) {
