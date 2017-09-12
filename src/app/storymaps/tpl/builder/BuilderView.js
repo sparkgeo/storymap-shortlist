@@ -21,6 +21,7 @@ define(["lib-build/tpl!./BuilderView",
 		// Settings tab
 		"./settings/ViewGeneralOptions",
 		"./settings/ViewMapOptions",
+		"./settings/ViewThemeOptions",
 		"storymaps/common/builder/settings/ViewHeader",
         "./settings/ViewMaptiks",
 		// global map extent save (home button setting)
@@ -76,6 +77,7 @@ define(["lib-build/tpl!./BuilderView",
 		// Settings tab
 		ViewGeneralOptions,
 		ViewMapOptions,
+		ViewThemeOptions,
 		ViewHeader,
         ViewMaptiks,
 		// Home button extent saveAppMapExtentSave,
@@ -143,6 +145,12 @@ define(["lib-build/tpl!./BuilderView",
 
 			this.init = function(settingsPopup)
 			{
+				var isEdge = navigator.appVersion.indexOf('Edge') > 0 ? true : false;
+				// Or with Edge
+				if( app.isInBuilder && isEdge) {
+					_core.initError("noBuilderEdge");
+					return false;
+				}
 				_settingsPopup = settingsPopup;
 				_mainView = app.ui.mainView;
 
@@ -169,7 +177,7 @@ define(["lib-build/tpl!./BuilderView",
 				$(".builder-organize")
 					.click(openOrganizePopup)
 					//.find(".builder-lbl").html(i18n.builder.organizePopup.title);
-					.find(".builder-lbl").html('Organize Tabs');
+					.find(".builder-lbl").html(i18n.builder.addEditPopup.organizeTabs);
 
 				_myCanvas = document.createElement('canvas');
 				_context = _myCanvas.getContext('2d');
@@ -219,11 +227,28 @@ define(["lib-build/tpl!./BuilderView",
 
 				var galleryConfig = {
 					map: app.map,
-					portalUrl: arcgisUtils.arcgisUrl.split('/sharing/')[0]
+					portalUrl: arcgisUtils.arcgisUrl.split('/sharing/')[0],
+					bingMapsKey: app.portal.bingKey
 				};
 
-				if (app.portal.basemapGalleryGroupQuery) {
-					galleryConfig.basemapsGroup = app.portal.basemapGalleryGroupQuery;
+				// If it has the useVectorBasemaps property and its true then use the
+				// vectorBasemapGalleryGroupQuery otherwise use the default
+				var basemapGalleryGroupQuery = app.portal.basemapGalleryGroupQuery;
+				if (app.portal.hasOwnProperty("useVectorBasemaps") && app.portal.useVectorBasemaps === true && app.portal.vectorBasemapGalleryGroupQuery) {
+					basemapGalleryGroupQuery = app.portal.vectorBasemapGalleryGroupQuery;
+				}
+
+				var q = parseQuery(basemapGalleryGroupQuery);
+				galleryConfig.basemapsGroup = null;
+				if (q.id) {
+					galleryConfig.basemapsGroup = {
+						id: q.id
+					};
+				} else if (q.title && q.owner) {
+					galleryConfig.basemapsGroup = {
+						title: q.title,
+						owner: q.owner
+					};
 				}
 				else {
 					galleryConfig.showArcGISBasemaps = true;
@@ -235,7 +260,7 @@ define(["lib-build/tpl!./BuilderView",
 				);
 				basemapGallery.startup();
 
-				$("#basemapChooser .dijitTitlePaneTextNode").text('Change Basemap');
+				$("#basemapChooser .dijitTitlePaneTextNode").text(i18n.builder.settings.changeBasemap);
 				$("#basemapChooser").show();
 
 				var currentExtent = app.map.extent;
@@ -370,6 +395,24 @@ define(["lib-build/tpl!./BuilderView",
 				return BuilderHelper.getBlankWebmapJSON();
 			};
 
+			function parseQuery(queryString)
+			{
+				var regex = /(AND|OR)?\W*([a-z]+):/ig,
+				fields = {},
+				fieldName,
+				fieldIndex,
+				result = regex.exec(queryString);
+				while (result) {
+					fieldName = result && result[2];
+					fieldIndex = result ? (result.index + result[0].length) : -1;
+
+					result = regex.exec(queryString);
+
+					fields[fieldName] = queryString.substring(fieldIndex, result ? result.index : queryString.length).replace(/^\s+|\s+$/g, "").replace(/\"/g, ""); //remove extra quotes in title
+				}
+				return fields;
+			}
+
 			function manageUploadedMedia()
 			{
 				if(app.data.getWebAppData().getIsExternalData())
@@ -386,7 +429,16 @@ define(["lib-build/tpl!./BuilderView",
 				FileUploadHelper.getStoryResources().then(function(media){
 					$.each(media, function(i, image){
 						var imgUrl = image.picUrl ? image.picUrl : image.sizes[0].url;
-						var foundImg = $.grep(shortlistMedia, function(e){ var featImgUrl = e.picUrl ? e.picUrl : e.sizes[0].url; featImgUrl = decodeURI(featImgUrl); return featImgUrl == imgUrl; });
+						var foundImg = $.grep(shortlistMedia, function(e){
+							var featImgUrl = e.picUrl ? e.picUrl : e.sizes[0].url;
+							if(featImgUrl.indexOf('%20')){
+
+							}else{
+								featImgUrl = decodeURI(featImgUrl);
+							}
+
+							return featImgUrl == imgUrl;
+						});
 						if(!foundImg.length)
 							unusedUploads.push(image);
 					});
@@ -410,11 +462,13 @@ define(["lib-build/tpl!./BuilderView",
 
 				if(app.isDirectCreationFirstSave){
 					//TODO populate with config colors info.  Also border for #paneLeft
+					if($.isEmptyObject(app.data.getWebAppData().getThemeOptions()))
+						app.data.getWebAppData().setDefaultThemeOptions();
 					var colorOrder = app.cfg.COLOR_ORDER.split(",");
 					var activeColor = $.grep(app.cfg.COLOR_SCHEMES, function(e){ return e.name == colorOrder[0]; });
 					$('#contentPanel').css('border-top-color', activeColor[0].color);
 					var colors = {
-						header: '#444',
+						header: app.data.getWebAppData().getThemeOptions().headerColor,
 						tabText: '#d8d8d8',
 						tab: '#666',
 						tabTextActive: '#fff',
@@ -534,7 +588,7 @@ define(["lib-build/tpl!./BuilderView",
 						_organizePopup.close();
 
 						var colors = {
-							header: '#444',
+							header: app.data.getWebAppData().getThemeOptions().headerColor,
 							tabText: '#d8d8d8',
 							tab: '#666',
 							tabTextActive: '#fff',
@@ -574,6 +628,7 @@ define(["lib-build/tpl!./BuilderView",
 				return [
 					new ViewGeneralOptions(),
 					new ViewMapOptions(),
+					new ViewThemeOptions(),
 					new ViewHeader({
 						smallSizeOpt: app.appCfg.headerCompactOpt
 					}),
@@ -592,6 +647,7 @@ define(["lib-build/tpl!./BuilderView",
 					[
 						WebApplicationData.getGeneralOptions(),
 						WebApplicationData.getGeneralOptions(),
+						WebApplicationData.getThemeOptions(),
 						WebApplicationData.getHeader(),
                         WebApplicationData.getMaptiks()
 					],
@@ -709,7 +765,7 @@ define(["lib-build/tpl!./BuilderView",
 					var activeColor = $.grep(app.cfg.COLOR_SCHEMES, function(e){ return e.name == colorOrder[0]; });
 					$('#contentPanel').css('border-top-color', activeColor[0].color);
 					var colors = {
-						header: '#444',
+						header: app.data.getWebAppData().getThemeOptions().headerColor,
 						tabText: '#d8d8d8',
 						tab: '#666',
 						tabTextActive: '#fff',
@@ -1093,8 +1149,9 @@ define(["lib-build/tpl!./BuilderView",
 				var generalOptions = data.settings[0];
 				$.extend(generalOptions, data.settings[1]);
 				app.data.getWebAppData().setGeneralOptions(data.settings[0]);
-				app.data.getWebAppData().setHeader(data.settings[2]);
-                app.data.getWebAppData().setMaptiks(data.settings[3]);
+				app.data.getWebAppData().setThemeOptions(data.settings[2]);
+				app.data.getWebAppData().setHeader(data.settings[3]);
+                app.data.getWebAppData().setMaptiks(data.settings[4]);
 
 				if(updateExtentMode)
 					topic.publish("UPDATE_EXTENT_MODE", data.settings[1].extentMode);
@@ -1222,7 +1279,7 @@ define(["lib-build/tpl!./BuilderView",
 						var activeColor = $.grep(app.cfg.COLOR_SCHEMES, function(e){ return e.name == colorOrder[0]; });
 						$('#contentPanel').css('border-top-color', activeColor[0].color);
 						var colors = {
-							header: '#444',
+							header: app.data.getWebAppData().getThemeOptions().headerColor,
 							tabText: '#d8d8d8',
 							tab: '#666',
 							tabTextActive: '#fff',
@@ -1275,7 +1332,7 @@ define(["lib-build/tpl!./BuilderView",
 							var activeColor = $.grep(app.cfg.COLOR_SCHEMES, function(e){ return e.name == colorOrder[0]; });
 							$('#contentPanel').css('border-top-color', activeColor[0].color);
 							var colors = {
-								header: '#444',
+								header: app.data.getWebAppData().getThemeOptions().headerColor,
 								tabText: '#d8d8d8',
 								tab: '#666',
 								tabTextActive: '#fff',
@@ -1305,7 +1362,8 @@ define(["lib-build/tpl!./BuilderView",
 						//_this.initMapExtentSave();
 
 						if(!app.data.getWebAppData().getIsExternalData())
-							app.layerCurrent = shortlistLayer;
+							Object.assign(app.layerCurrent, shortlistLayer);
+							//app.layerCurrent = shortlistLayer;
 						shortlistLayer.on("mouse-over", _mainView.layer_onMouseOver);
 						shortlistLayer.on("mouse-out", _mainView.layer_onMouseOut);
 						shortlistLayer.on("click", _mainView.layer_onClick);
@@ -1377,7 +1435,9 @@ define(["lib-build/tpl!./BuilderView",
 			this.updateShortlistExtent = function()
 			{
 				if(app.map.getLayer(app.data.getWebAppData().getShortlistLayerId()).graphics.length == 1){
-					var geom = webMercatorUtils.webMercatorToGeographic(app.map.getLayer(app.data.getWebAppData().getShortlistLayerId()).graphics[0].geometry);
+					var geom = app.map.getLayer(app.data.getWebAppData().getShortlistLayerId()).graphics[0].geometry;
+					if(app.map.spatialReference.wkid != 4326)
+						geom = webMercatorUtils.webMercatorToGeographic(geom);
 					app.map.centerAndZoom([geom.x, geom.y], 13);
 				}
 
